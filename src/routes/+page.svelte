@@ -1,6 +1,10 @@
 <div class="container">
   <div class="emphasis">Mingeon Kim</div>
-  <div class="soon">me [at] mingeon.me</div>
+
+  <div class="soon">
+    <div>me [at] mingeon.me</div>
+    <a href="https://github.com/issac4892">GitHub</a>
+  </div>
 </div>
 
 <style>
@@ -14,11 +18,16 @@
     justify-content: center;
     align-items: center;
 
-    gap: 30px;
+    gap: 2rem;
   }
 
   .soon {
-    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+
+    font-size: 0.8rem;
   }
 
   .emphasis {
