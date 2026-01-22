@@ -3,7 +3,7 @@
 
   <div class="soon">
     <div>me [at] mingeon.me</div>
-    <a href="https://github.com/issac4892">GitHub</a>
+    <a href="https://github.com/minge0n">GitHub</a>
   </div>
 </div>
 
