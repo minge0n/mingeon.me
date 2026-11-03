@@ -1,0 +1,127 @@
+@font-face {
+  font-family: 'LINE Seed KR';
+  font-weight: 400;
+  src: url('/fonts/LINESeedKR-Rg.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LINE Seed KR';
+  font-weight: 700;
+  src: url('/fonts/LINESeedKR-Bd.woff2') format('woff2');
+  font-display: swap;
+}
+
+main {
+  --primary-default: 236, 236, 236;
+  --bg-default: 24, 24, 24;
+
+  --color-prettylights-syntax-comment: #666;
+  --color-prettylights-syntax-constant: #a8a8a8;
+  --color-prettylights-syntax-entity: #fff;
+  --color-prettylights-syntax-storage-modifier-import: #fff;
+  --color-prettylights-syntax-entity-tag: #fff;
+  --color-prettylights-syntax-keyword: #fff;
+  --color-prettylights-syntax-string: #a8a8a8;
+  --color-prettylights-syntax-variable: #a8a8a8;
+  --color-prettylights-syntax-string-regexp: #a8a8a8;
+  --color-prettylights-syntax-markup-heading: #fff;
+  --color-prettylights-syntax-markup-bold: #fff;
+  --color-prettylights-syntax-markup-italic: #fff;
+  --color-prettylights-syntax-markup-list: #a8a8a8;
+  --color-prettylights-syntax-markup-deleted-text: #a8a8a8;
+  --color-prettylights-syntax-markup-deleted-bg: rgb(24, 24, 24);
+  --color-prettylights-syntax-markup-inserted-text: #fff;
+  --color-prettylights-syntax-markup-inserted-bg: rgb(24, 24, 24);
+  --color-prettylights-syntax-markup-changed-text: #a8a8a8;
+  --color-prettylights-syntax-markup-changed-bg: rgb(24, 24, 24);
+  --color-prettylights-syntax-meta-diff-range: #a8a8a8;
+  --color-prettylights-syntax-brackethighlighter-angle: #666;
+  --color-prettylights-syntax-constant-other-reference-link: #a8a8a8;
+
+  --color-btn-text: #ececec;
+  --color-btn-bg: rgba(var(--bg-default), 1);
+  --color-btn-border: #2a2a2a;
+  --color-btn-shadow: none;
+  --color-btn-inset-shadow: none;
+  --color-btn-hover-bg: rgba(var(--bg-default), 0.6);
+  --color-btn-hover-border: #2a2a2a;
+  --color-btn-active-bg: rgba(var(--primary-default), 0.12);
+  --color-btn-active-border: rgba(var(--primary-default), 0.6);
+  --color-btn-selected-bg: rgba(var(--primary-default), 0.08);
+  --color-btn-primary-text: #0e0e0e;
+  --color-btn-primary-bg: rgba(var(--primary-default), 1);
+  --color-btn-primary-border: rgba(var(--primary-default), 1);
+  --color-btn-primary-shadow: none;
+  --color-btn-primary-inset-shadow: none;
+  --color-btn-primary-hover-bg: rgba(var(--primary-default), 0.85);
+  --color-btn-primary-hover-border: rgba(var(--primary-default), 0.85);
+  --color-btn-primary-selected-bg: rgba(var(--primary-default), 1);
+  --color-btn-primary-selected-shadow: none;
+  --color-btn-primary-disabled-text: #0e0e0e;
+  --color-btn-primary-disabled-bg: rgba(var(--primary-default), 0.35);
+  --color-btn-primary-disabled-border: rgba(var(--primary-default), 0.35);
+
+  --color-action-list-item-default-hover-bg: rgba(var(--bg-default), 1);
+  --color-segmented-control-bg: rgba(var(--bg-default), 1);
+  --color-segmented-control-button-bg: #0e0e0e;
+  --color-segmented-control-button-selected-border: #2a2a2a;
+
+  --color-fg-default: #ececec;
+  --color-fg-muted: #8c8c8c;
+  --color-fg-subtle: #666;
+  --color-canvas-default: #0e0e0e;
+  --color-canvas-overlay: #0e0e0e;
+  --color-canvas-inset: rgba(var(--bg-default), 1);
+  --color-canvas-subtle: rgba(var(--bg-default), 1);
+  --color-border-default: #2a2a2a;
+  --color-border-muted: #2a2a2a;
+  --color-neutral-muted: rgba(var(--primary-default), 0.08);
+
+  --color-accent-fg: #ececec;
+  --color-accent-emphasis: rgba(var(--primary-default), 1);
+  --color-accent-muted: rgba(var(--primary-default), 0.3);
+  --color-accent-subtle: rgba(var(--primary-default), 0.06);
+  --color-success-fg: #ececec;
+  --color-attention-fg: #ececec;
+  --color-attention-muted: rgba(var(--primary-default), 0.3);
+  --color-attention-subtle: rgba(var(--bg-default), 1);
+  --color-danger-fg: #ececec;
+  --color-danger-muted: rgba(var(--primary-default), 0.3);
+  --color-danger-subtle: rgba(var(--bg-default), 1);
+  --color-primer-shadow-inset: none;
+  --color-scale-gray-1: rgba(var(--bg-default), 1);
+  --color-scale-blue-1: rgba(var(--primary-default), 0.1);
+  --color-social-reaction-bg-hover: var(--color-scale-gray-1);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-1);
+
+  color-scheme: dark;
+}
+
+main,
+main .gsc-comment-box-textarea,
+main .gsc-reactions-count {
+  font-family:
+    'LINE Seed KR',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+main .gsc-loading-image {
+  background-image: url('https://github.githubassets.com/images/mona-loading-default.gif');
+}
+
+main .pagination-loader-container {
+  background-image: url('https://github.com/images/modules/pulls/progressive-disclosure-line.svg');
+}
+
+.gsc-comment:not(.gsc-reply-box) .gsc-replies {
+  border-radius: unset;
+}
+
+main .gsc-comment-box-textarea::placeholder {
+  color: #8c8c8c;
+  opacity: 1;
+}

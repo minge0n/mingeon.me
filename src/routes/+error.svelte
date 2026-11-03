@@ -6,30 +6,18 @@
   <title>{$page.status}</title>
 </svelte:head>
 
-<div class="container">
-  <div class="emphasis">{$page.status}</div>
-  <div class="soon">{$page.error?.message}</div>
-</div>
+<h1>{$page.status}</h1>
+<p>{$page.error?.message}</p>
+<p><a href="/">홈으로</a></p>
 
 <style>
-  .container {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    gap: 30px;
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
   }
 
-  .soon {
-    font-size: 12px;
-  }
-
-  .emphasis {
-    font-weight: 700;
+  p {
+    color: var(--muted);
+    font-size: 0.85rem;
   }
 </style>

@@ -1,36 +1,10 @@
-<div class="container">
-  <div class="emphasis">Mingeon Kim</div>
+<script lang="ts">
+  import Meta from '$lib/components/Meta.svelte';
+  import PostList from '$lib/components/PostList.svelte';
 
-  <div class="soon">
-    <div>me [at] mingeon.me</div>
-    <a href="https://github.com/minge0n">GitHub</a>
-  </div>
-</div>
+  let { data } = $props();
+</script>
 
-<style>
-  .container {
-    width: 100%;
-    height: 100%;
+<Meta path="/" />
 
-    display: flex;
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    gap: 2rem;
-  }
-
-  .soon {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
-
-    font-size: 0.8rem;
-  }
-
-  .emphasis {
-    font-weight: 700;
-  }
-</style>
+<PostList posts={data.posts} />
