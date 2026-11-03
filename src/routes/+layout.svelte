@@ -52,6 +52,7 @@
   <footer>
     <span>{site.email.replace('@', ' [at] ')}</span>
     <a href={site.github}>GitHub</a>
+    <a href={site.linkedin}>LinkedIn</a>
   </footer>
 </div>
 

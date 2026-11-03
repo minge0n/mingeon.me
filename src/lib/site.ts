@@ -4,6 +4,7 @@ export const site = {
   url: 'https://mingeon.me',
   email: 'me@mingeon.me',
   github: 'https://github.com/minge0n',
+  linkedin: 'https://www.linkedin.com/in/mingeonkim',
 };
 
 export const giscus = {
