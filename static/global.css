@@ -116,6 +116,13 @@ a:hover {
   animation-timing-function: ease;
 }
 
+:root:not([data-transition='theme'])::view-transition-group(*),
+:root:not([data-transition='theme'])::view-transition-old(*),
+:root:not([data-transition='theme'])::view-transition-new(*) {
+  animation-duration: 0.14s;
+  animation-timing-function: ease-out;
+}
+
 :root:not([data-transition='theme'])::view-transition-old(root) {
   animation-name: page-out;
 }
@@ -127,14 +134,12 @@ a:hover {
 @keyframes page-out {
   to {
     opacity: 0;
-    filter: blur(6px);
   }
 }
 
 @keyframes page-in {
   from {
     opacity: 0;
-    filter: blur(6px);
   }
 }
 
@@ -142,7 +147,7 @@ a:hover {
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
-    animation: none;
+    animation: none !important;
   }
 }
 

@@ -37,7 +37,7 @@
     </div>
     <nav>
       <a href="/tags">태그</a>
-      <a href="/rss.xml">RSS</a>
+      <a href="/rss.xml" data-sveltekit-reload>RSS</a>
       <button type="button" onclick={toggleTheme} aria-label="테마 바꾸기">
         <IconMoon class="to-dark" size={18} stroke={1.75} />
         <IconSun class="to-light" size={18} stroke={1.75} />
