@@ -44,13 +44,52 @@ test('table of contents follows actual heading IDs, nesting and duplicate slugs'
   assert.ok(server);
   const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
   const result = await renderMarkdown(
-    '# Title\n\n## Setup `init_boot`\n\n### **Key** check\n\n#### Hidden detail\n\n## Setup `init_boot`\n\n```md\n## Not a heading\n```',
+    '# Title\n\n## Setup `init_boot`\n\n### **Key** check\n\n#### Detail\n\n##### Command\n\n###### Result\n\n## Setup `init_boot`\n\n```md\n## Not a heading\n```',
   );
   assert.deepEqual(result.toc, [
-    { id: 'setup-init_boot', title: 'Setup init_boot', children: [{ id: 'key-check', title: 'Key check' }] },
+    {
+      id: 'setup-init_boot',
+      title: 'Setup init_boot',
+      children: [
+        {
+          id: 'key-check',
+          title: 'Key check',
+          children: [
+            {
+              id: 'detail',
+              title: 'Detail',
+              children: [
+                {
+                  id: 'command',
+                  title: 'Command',
+                  children: [{ id: 'result', title: 'Result', children: [] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     { id: 'setup-init_boot-1', title: 'Setup init_boot', children: [] },
   ]);
   assert.match(result.html, /id="setup-init_boot-1"/);
+});
+
+test('table of contents attaches skipped heading levels to the nearest preceding parent', async () => {
+  assert.ok(server);
+  const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
+  const result = await renderMarkdown('### Orphan\n\n##### Deep\n\n## Main\n\n#### Skipped\n\n### Back');
+  assert.deepEqual(result.toc, [
+    { id: 'orphan', title: 'Orphan', children: [{ id: 'deep', title: 'Deep', children: [] }] },
+    {
+      id: 'main',
+      title: 'Main',
+      children: [
+        { id: 'skipped', title: 'Skipped', children: [] },
+        { id: 'back', title: 'Back', children: [] },
+      ],
+    },
+  ]);
 });
 
 test('posts without section headings have no table of contents', async () => {
@@ -90,7 +129,7 @@ test('table of contents identifies the current parent or subsection without mark
   const { default: TableOfContents } = await server.ssrLoadModule('/src/lib/components/TableOfContents.svelte');
   const { render } = await server.ssrLoadModule('svelte/server');
   const entries = [
-    { id: 'setup', title: 'Setup', children: [{ id: 'verify', title: 'Verify' }] },
+    { id: 'setup', title: 'Setup', children: [{ id: 'verify', title: 'Verify', children: [] }] },
     { id: 'results', title: 'Results', children: [] },
   ];
 
@@ -108,27 +147,55 @@ test('table of contents identifies the current parent or subsection without mark
   }
 });
 
-test('table of contents exposes subsections only for the current section', async () => {
+test('table of contents opens every ancestor of the current heading and closes unrelated branches', async () => {
   assert.ok(server);
   const { default: TableOfContents } = await server.ssrLoadModule('/src/lib/components/TableOfContents.svelte');
   const { render } = await server.ssrLoadModule('svelte/server');
   const entries = [
-    { id: 'setup', title: 'Setup', children: [{ id: 'verify', title: 'Verify' }] },
-    { id: 'results', title: 'Results', children: [{ id: 'conclusion', title: 'Conclusion' }] },
+    {
+      id: 'setup',
+      title: 'Setup',
+      children: [
+        {
+          id: 'verify',
+          title: 'Verify',
+          children: [
+            {
+              id: 'detail',
+              title: 'Detail',
+              children: [
+                { id: 'command', title: 'Command', children: [{ id: 'result', title: 'Result', children: [] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    { id: 'results', title: 'Results', children: [{ id: 'conclusion', title: 'Conclusion', children: [] }] },
   ];
 
   for (const [activeId, expected] of [
-    ['setup', ['#verify']],
-    ['verify', ['#verify']],
-    ['results', ['#conclusion']],
-    ['', []],
+    ['setup', ['#setup', '#verify', '#results']],
+    ['verify', ['#setup', '#verify', '#detail', '#results']],
+    ['result', ['#setup', '#verify', '#detail', '#command', '#result', '#results']],
+    ['results', ['#setup', '#results', '#conclusion']],
+    ['', ['#setup', '#results']],
   ]) {
     const rendered = render(TableOfContents, { props: { entries, activeId } }).body;
-    const groups = [...rendered.matchAll(/<ul\b(?=[^>]*\bclass="[^"]*\bchildren\b)([^>]*)>(.*?)<\/ul>/gs)];
-    const exposed = groups
-      .filter(([, attributes]) => !/\binert(?:[\s=>])|\baria-hidden="true"/.test(attributes))
-      .flatMap(([, , content]) => [...content.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(([, href]) => href));
+    const hiddenLists = [];
+    const exposed = [];
+    for (const [tag] of rendered.matchAll(/<\/?ul\b[^>]*>|<a\b[^>]*>/g)) {
+      if (tag.startsWith('</ul')) hiddenLists.pop();
+      else if (tag.startsWith('<ul')) hiddenLists.push(/\binert(?:[\s=>])|\baria-hidden="true"/.test(tag));
+      else if (!hiddenLists.includes(true)) exposed.push(tag.match(/\bhref="([^"]+)"/)?.[1]);
+    }
     assert.deepEqual(exposed, expected, `Expanded section: ${activeId || 'before the first heading'}`);
+    if (activeId !== '') {
+      const marked = [...rendered.matchAll(/<a\b[^>]*aria-current="location"[^>]*>/g)].map(
+        ([anchor]) => anchor.match(/\bhref="([^"]+)"/)?.[1],
+      );
+      assert.deepEqual(marked, [`#${activeId}`]);
+    }
   }
 });
 

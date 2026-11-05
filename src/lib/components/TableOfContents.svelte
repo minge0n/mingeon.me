@@ -4,6 +4,10 @@
   let { entries, activeId = '' }: { entries: Array<TocEntry>; activeId?: string } = $props();
   let navigation = $state<HTMLElement>();
 
+  function isActiveBranch(entry: TocEntry): boolean {
+    return entry.id === activeId || entry.children.some(isActiveBranch);
+  }
+
   $effect(() => {
     const element = navigation;
     const currentId = activeId;
@@ -35,26 +39,24 @@
   });
 </script>
 
-<nav bind:this={navigation} aria-label="글 목차">
-  <ul>
-    {#each entries as entry (entry.id)}
-      {@const expanded = entry.id === activeId || entry.children.some((child) => child.id === activeId)}
+{#snippet tocList(items: Array<TocEntry>, nested: boolean, visible: boolean)}
+  <ul class:children={nested} inert={!visible} aria-hidden={visible ? undefined : true}>
+    {#each items as entry (entry.id)}
+      {@const expanded = isActiveBranch(entry)}
       <li>
         <a href="#{entry.id}" aria-current={activeId === entry.id ? 'location' : undefined}>{entry.title}</a>
         {#if entry.children.length > 0}
           <div class="subsections" class:expanded>
-            <ul class="children" inert={!expanded} aria-hidden={!expanded}>
-              {#each entry.children as child (child.id)}
-                <li>
-                  <a href="#{child.id}" aria-current={activeId === child.id ? 'location' : undefined}>{child.title}</a>
-                </li>
-              {/each}
-            </ul>
+            {@render tocList(entry.children, true, expanded)}
           </div>
         {/if}
       </li>
     {/each}
   </ul>
+{/snippet}
+
+<nav bind:this={navigation} aria-label="글 목차">
+  {@render tocList(entries, false, true)}
 </nav>
 
 <style>

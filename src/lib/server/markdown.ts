@@ -22,7 +22,7 @@ export type TocLink = {
 };
 
 export type TocEntry = TocLink & {
-  children: Array<TocLink>;
+  children: Array<TocEntry>;
 };
 
 export type RenderedMarkdown = {
@@ -55,21 +55,24 @@ function rehypeMermaidPassthrough() {
 function rehypeTableOfContents() {
   return (tree: Root, file: VFile): void => {
     const toc: Array<TocEntry> = [];
-    let parent: TocEntry | undefined;
+    const parents: Array<{ level: number; entry: TocEntry }> = [];
 
     visit(tree, 'element', (node) => {
-      if (node.tagName !== 'h2' && node.tagName !== 'h3') return;
+      if (!/^h[2-6]$/.test(node.tagName)) return;
       const id = node.properties.id;
       const title = toString(node).trim();
       if (typeof id !== 'string' || id === '' || title === '') return;
 
-      if (node.tagName === 'h3' && parent !== undefined) {
-        parent.children.push({ id, title });
-      } else {
-        const entry = { id, title, children: [] };
-        toc.push(entry);
-        parent = node.tagName === 'h2' ? entry : undefined;
+      const level = Number(node.tagName.slice(1));
+      const entry: TocEntry = { id, title, children: [] };
+      let parent = parents.at(-1);
+      while (parent !== undefined && parent.level >= level) {
+        parents.pop();
+        parent = parents.at(-1);
       }
+      if (parent === undefined) toc.push(entry);
+      else parent.entry.children.push(entry);
+      parents.push({ level, entry });
     });
 
     file.data.toc = toc;

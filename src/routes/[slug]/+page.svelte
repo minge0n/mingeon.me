@@ -15,13 +15,12 @@
     const element = article;
     if (element === undefined) return;
 
-    const headings = data.toc
-      .flatMap((entry) => [entry, ...entry.children])
-      .flatMap((entry) => {
-        const heading = document.getElementById(entry.id);
+    if (data.toc.length === 0) {
+      activeId = '';
 
-        return heading !== null && element.contains(heading) ? [heading] : [];
-      });
+      return;
+    }
+    const headings = [...element.querySelectorAll<HTMLElement>('.prose :is(h2, h3, h4, h5, h6)[id]')];
     let frame = 0;
     const updateReadingPosition = (): void => {
       frame = 0;
@@ -142,7 +141,10 @@
   }
 
   .prose :global(h2),
-  .prose :global(h3) {
+  .prose :global(h3),
+  .prose :global(h4),
+  .prose :global(h5),
+  .prose :global(h6) {
     scroll-margin-top: 25vh;
   }
 
