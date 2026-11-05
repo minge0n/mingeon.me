@@ -85,6 +85,53 @@ test('post pages render section navigation with the mobile disclosure initially 
   assert.doesNotMatch(disclosure, /\bopen(?:[\s=>])/);
 });
 
+test('table of contents identifies the current parent or subsection without marking other links', async () => {
+  assert.ok(server);
+  const { default: TableOfContents } = await server.ssrLoadModule('/src/lib/components/TableOfContents.svelte');
+  const { render } = await server.ssrLoadModule('svelte/server');
+  const entries = [
+    { id: 'setup', title: 'Setup', children: [{ id: 'verify', title: 'Verify' }] },
+    { id: 'results', title: 'Results', children: [] },
+  ];
+
+  for (const [activeId, expected] of [
+    ['setup', ['#setup']],
+    ['verify', ['#verify']],
+    ['', []],
+  ]) {
+    const rendered = render(TableOfContents, { props: { entries, activeId } }).body;
+    const currentLinks = [...rendered.matchAll(/<a\b[^>]*>/g)]
+      .map(([anchor]) => anchor)
+      .filter((anchor) => /\baria-current="location"/.test(anchor))
+      .map((anchor) => anchor.match(/\bhref="([^"]+)"/)?.[1]);
+    assert.deepEqual(currentLinks, expected, `Current location: ${activeId || 'before the first heading'}`);
+  }
+});
+
+test('table of contents exposes subsections only for the current section', async () => {
+  assert.ok(server);
+  const { default: TableOfContents } = await server.ssrLoadModule('/src/lib/components/TableOfContents.svelte');
+  const { render } = await server.ssrLoadModule('svelte/server');
+  const entries = [
+    { id: 'setup', title: 'Setup', children: [{ id: 'verify', title: 'Verify' }] },
+    { id: 'results', title: 'Results', children: [{ id: 'conclusion', title: 'Conclusion' }] },
+  ];
+
+  for (const [activeId, expected] of [
+    ['setup', ['#verify']],
+    ['verify', ['#verify']],
+    ['results', ['#conclusion']],
+    ['', []],
+  ]) {
+    const rendered = render(TableOfContents, { props: { entries, activeId } }).body;
+    const groups = [...rendered.matchAll(/<ul\b(?=[^>]*\bclass="[^"]*\bchildren\b)([^>]*)>(.*?)<\/ul>/gs)];
+    const exposed = groups
+      .filter(([, attributes]) => !/\binert(?:[\s=>])|\baria-hidden="true"/.test(attributes))
+      .flatMap(([, , content]) => [...content.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(([, href]) => href));
+    assert.deepEqual(exposed, expected, `Expanded section: ${activeId || 'before the first heading'}`);
+  }
+});
+
 test('article sharing metadata uses the post image and complete image information', async () => {
   assert.ok(server);
   const { default: Meta } = await server.ssrLoadModule('/src/lib/components/Meta.svelte');
