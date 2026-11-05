@@ -95,7 +95,6 @@ async function createRenderer(root, site) {
     return { size, lines: layout.lines };
   };
 
-  const icon = `data:image/svg+xml;base64,${(await fs.readFile(path.join(root, 'static/icon.svg'))).toString('base64')}`;
   const text = (value, x, y, size, color = '#f2f2f2', weight = 400, anchor = 'start') =>
     `<text x="${x}" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${color}" text-anchor="${anchor}">${escapeXml(value)}</text>`;
 
@@ -110,9 +109,7 @@ async function createRenderer(root, site) {
     const tagLine = wrap(tags.map((tag) => `#${tag}`).join('   '), 760, 21, 400, 1).lines[0] ?? '';
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
       <rect width="1200" height="630" fill="#111111"/>
-      <image href="${icon}" x="72" y="58" width="48" height="48"/>
-      ${text(article ? site.title : '개발 블로그', 136, 91, 25)}
-      ${text(new URL(site.url).host, 1128, 91, 24, '#b5b5b5', 400, 'end')}
+      ${text(article ? site.title : '개발 블로그', 72, 91, 25)}
       ${heading.lines.map((line, index) => text(line, 72, firstBaseline + index * leading, heading.size, '#f2f2f2', 700)).join('')}
       ${descriptionLines.map((line, index) => text(line, 72, descriptionY + index * 38, descriptionSize, '#b5b5b5')).join('')}
       ${article ? text(date.replaceAll('-', '.'), 72, 568, 23, '#b5b5b5') : ''}

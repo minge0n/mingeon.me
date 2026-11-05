@@ -47,3 +47,43 @@ test('OG build creates real post-specific PNGs, excludes drafts and removes stal
     await rm(fixture, { recursive: true, force: true });
   }
 });
+
+test('OG headers need no favicon file and leave the upper-right area empty', async () => {
+  const fixture = await mkdtemp(path.join(os.tmpdir(), 'blog-og-minimal-'));
+  try {
+    await mkdir(path.join(fixture, 'src/posts'), { recursive: true });
+    await mkdir(path.join(fixture, 'src/lib'), { recursive: true });
+    await mkdir(path.join(fixture, 'static'), { recursive: true });
+    await symlink(path.join(root, 'static/fonts'), path.join(fixture, 'static/fonts'));
+    await copyFile(path.join(root, 'src/lib/site.json'), path.join(fixture, 'src/lib/site.json'));
+    await writeFile(path.join(fixture, 'src/posts/post.md'), '---\ntitle: 한글 글 제목\ndate: 2026-11-05\n---\n');
+    const result = spawnSync(process.execPath, [path.join(root, 'scripts/generate-og.mjs'), fixture], {
+      encoding: 'utf8',
+      timeout: 30000,
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const { initWasm, Resvg } = await import('@resvg/resvg-wasm');
+    await initWasm(await readFile(new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'))));
+    for (const file of ['static/og.png', 'static/og/post.png']) {
+      const png = await readFile(path.join(fixture, file));
+      const renderer = new Resvg(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><image width="1200" height="630" href="data:image/png;base64,${png.toString('base64')}"/></svg>`,
+      );
+      const image = renderer.render();
+      const pixels = image.pixels;
+      let empty = true;
+      for (let y = 50; y < 120; y++) {
+        for (let x = 850; x < 1140; x++) {
+          const at = (y * 1200 + x) * 4;
+          if (pixels[at] !== 17 || pixels[at + 1] !== 17 || pixels[at + 2] !== 17 || pixels[at + 3] !== 255)
+            empty = false;
+        }
+      }
+      image.free();
+      renderer.free();
+      assert.ok(empty, `${file}: the upper-right area must contain only the background`);
+    }
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+  }
+});
