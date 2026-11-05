@@ -39,6 +39,9 @@
   description={data.post.description || undefined}
   path="/{data.post.slug}"
   type="article"
+  imagePath={data.post.ogImage}
+  publishedTime={data.post.date}
+  tags={data.post.tags.map((tag) => tag.name)}
 />
 
 <svelte:head>

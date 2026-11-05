@@ -10,6 +10,7 @@ export type PostMeta = {
   title: string;
   date: string;
   description: string;
+  ogImage: string;
   tags: Array<TagRef>;
 };
 
@@ -28,6 +29,7 @@ const reservedSlugs = new Set([
   'favicon.ico',
   'fonts',
   'og.png',
+  'og',
   'icon.svg',
   'global.css',
 ]);
@@ -88,6 +90,7 @@ function parsePost(file: string, source: string): Post & { draft: boolean } {
 
   return {
     slug,
+    ogImage: frontmatter.draft === true ? '/og.png' : `/og/${encodeURIComponent(slug)}.png`,
     title: readString(frontmatter, 'title', file),
     date: readDate(frontmatter, file),
     description: typeof frontmatter.description === 'string' ? frontmatter.description : '',
@@ -107,8 +110,8 @@ const posts: Array<Post> = Object.entries(sources)
   })
   .sort((a, b) => b.date.localeCompare(a.date));
 
-function toMeta({ slug, title, date, description, tags }: Post): PostMeta {
-  return { slug, title, date, description, tags };
+function toMeta({ slug, title, date, description, ogImage, tags }: Post): PostMeta {
+  return { slug, title, date, description, ogImage, tags };
 }
 
 export function listPosts(): Array<PostMeta> {

@@ -3,16 +3,18 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "node scripts/generate-og.mjs && vite dev",
+    "build": "node scripts/generate-og.mjs && vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
     "lint": "prettier --check . && eslint .",
-    "test": "node --test --test-force-exit tests/*.test.mjs"
+    "test": "node --test --test-force-exit tests/*.test.mjs",
+    "generate:og": "node scripts/generate-og.mjs"
   },
   "devDependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
     "@shikijs/rehype": "^4.6.0",
     "@shikijs/transformers": "^4.6.0",
     "@sveltejs/adapter-cloudflare": "^4.8.0",

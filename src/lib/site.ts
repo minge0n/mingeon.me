@@ -1,11 +1,6 @@
-export const site = {
-  title: 'Mingeon Kim',
-  description: 'Software developer',
-  url: 'https://mingeon.me',
-  email: 'me@mingeon.me',
-  github: 'https://github.com/minge0n',
-  linkedin: 'https://www.linkedin.com/in/mingeonkim',
-};
+import siteData from './site.json';
+
+export const site = siteData;
 
 export const giscus = {
   repo: 'minge0n/mingeon.me',

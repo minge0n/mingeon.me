@@ -21,3 +21,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 .wrangler
+
+# Generated per-post Open Graph images
+/static/og/

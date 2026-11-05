@@ -8,7 +8,11 @@ let html = '';
 let head = '';
 
 before(async () => {
-  server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
+  server = await createServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
+    optimizeDeps: { noDiscovery: true, include: [] },
+  });
   const { default: Layout } = await server.ssrLoadModule('/src/routes/+layout.svelte');
   const { render } = await server.ssrLoadModule('svelte/server');
   const rendered = render(Layout, { props: { children: () => '' } });
@@ -79,4 +83,46 @@ test('post pages render section navigation with the mobile disclosure initially 
   const disclosure = rendered.match(/<details\b[^>]*>/)?.[0];
   assert.ok(disclosure);
   assert.doesNotMatch(disclosure, /\bopen(?:[\s=>])/);
+});
+
+test('article sharing metadata uses the post image and complete image information', async () => {
+  assert.ok(server);
+  const { default: Meta } = await server.ssrLoadModule('/src/lib/components/Meta.svelte');
+  const { render } = await server.ssrLoadModule('svelte/server');
+  const rendered = render(Meta, {
+    props: {
+      title: '안드로이드 설치 기록',
+      description: '서명과 부팅을 확인한 기록.',
+      path: '/android',
+      type: 'article',
+      imagePath: '/og/android.png',
+      publishedTime: '2026-11-05',
+      tags: ['Android', '개발'],
+    },
+  }).head;
+  assert.match(rendered, /property="og:image" content="https:\/\/mingeon\.me\/og\/android\.png\?v=[^"]+"/);
+  assert.match(rendered, /property="og:image:width" content="1200"/);
+  assert.match(rendered, /property="og:image:height" content="630"/);
+  assert.match(rendered, /property="og:image:type" content="image\/png"/);
+  assert.match(rendered, /property="og:site_name" content="Mingeon Kim"/);
+  assert.match(rendered, /property="og:locale" content="ko_KR"/);
+  assert.match(rendered, /property="article:published_time" content="2026-11-05"/);
+  assert.match(rendered, /property="article:tag" content="Android"/);
+  assert.match(rendered, /name="twitter:image:alt" content="안드로이드 설치 기록"/);
+});
+
+test('homepage sharing retains a site card and does not invent article dates', async () => {
+  assert.ok(server);
+  const { default: Meta } = await server.ssrLoadModule('/src/lib/components/Meta.svelte');
+  const { render } = await server.ssrLoadModule('svelte/server');
+  const rendered = render(Meta, { props: { path: '/' } }).head;
+  assert.match(rendered, /property="og:image" content="https:\/\/mingeon\.me\/og\.png\?v=[^"]+"/);
+  assert.doesNotMatch(rendered, /article:published_time/);
+});
+
+test('draft cards use the public site fallback rather than an unpublished image URL', async () => {
+  assert.ok(server);
+  const { findPost } = await server.ssrLoadModule('/src/lib/server/posts.ts');
+  assert.equal(findPost('markdown-guide').ogImage, '/og.png');
+  assert.equal(findPost('toss-front2-android').ogImage, '/og/toss-front2-android.png');
 });
