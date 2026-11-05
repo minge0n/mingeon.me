@@ -3,6 +3,7 @@
   import IconSun from '@tabler/icons-svelte-runes/icons/sun';
   import { onMount } from 'svelte';
   import { onNavigate } from '$app/navigation';
+  import { version } from '$app/environment';
   import { watchSystemTheme, toggleTheme } from '$lib/theme.svelte';
   import { site } from '$lib/site';
 
@@ -57,6 +58,7 @@
 </div>
 
 <svelte:head>
+  <link rel="stylesheet" href={`/global.css?v=${version}`} />
   <link rel="alternate" type="application/rss+xml" title={site.title} href="/rss.xml" />
 </svelte:head>
 
