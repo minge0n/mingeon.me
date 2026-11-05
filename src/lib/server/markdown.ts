@@ -14,8 +14,19 @@ import remarkRehype from 'remark-rehype';
 import { createCssVariablesTheme } from 'shiki';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+import type { VFile } from 'vfile';
+
+export type TocLink = {
+  id: string;
+  title: string;
+};
+
+export type TocEntry = TocLink & {
+  children: Array<TocLink>;
+};
 
 export type RenderedMarkdown = {
+  toc: Array<TocEntry>;
   html: string;
   hasMath: boolean;
   hasMermaid: boolean;
@@ -41,6 +52,30 @@ function rehypeMermaidPassthrough() {
   };
 }
 
+function rehypeTableOfContents() {
+  return (tree: Root, file: VFile): void => {
+    const toc: Array<TocEntry> = [];
+    let parent: TocEntry | undefined;
+
+    visit(tree, 'element', (node) => {
+      if (node.tagName !== 'h2' && node.tagName !== 'h3') return;
+      const id = node.properties.id;
+      const title = toString(node).trim();
+      if (typeof id !== 'string' || id === '' || title === '') return;
+
+      if (node.tagName === 'h3' && parent !== undefined) {
+        parent.children.push({ id, title });
+      } else {
+        const entry = { id, title, children: [] };
+        toc.push(entry);
+        parent = node.tagName === 'h2' ? entry : undefined;
+      }
+    });
+
+    file.data.toc = toc;
+  };
+}
+
 function parseCodeMeta(meta: string): Record<string, string> {
   const attributes: Record<string, string> = {};
 
@@ -60,6 +95,7 @@ const processor = unified()
   .use(rehypeMermaidPassthrough)
   .use(rehypeKatex)
   .use(rehypeSlug)
+  .use(rehypeTableOfContents)
   .use(rehypeAutolinkHeadings, {
     behavior: 'append',
     properties: { className: ['heading-anchor'], ariaLabel: '이 제목으로 링크' },
@@ -76,9 +112,11 @@ const processor = unified()
   .use(rehypeStringify, { allowDangerousHtml: true });
 
 export async function renderMarkdown(markdown: string): Promise<RenderedMarkdown> {
-  const html = String(await processor.process(markdown));
+  const result = await processor.process(markdown);
+  const html = String(result);
 
   return {
+    toc: (result.data.toc as Array<TocEntry>) ?? [],
     html,
     hasMath: html.includes('class="katex"'),
     hasMermaid: html.includes('<pre class="mermaid">'),

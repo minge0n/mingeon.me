@@ -35,3 +35,48 @@ test('normal blog pages retain client-side navigation', () => {
 test('global styles use a build-specific URL so cached pages receive new CSS', () => {
   assert.match(head, /<link\b[^>]*href="\/global\.css\?v=[^"\s]+"[^>]*>/);
 });
+
+test('table of contents follows actual heading IDs, nesting and duplicate slugs', async () => {
+  assert.ok(server);
+  const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
+  const result = await renderMarkdown(
+    '# Title\n\n## Setup `init_boot`\n\n### **Key** check\n\n#### Hidden detail\n\n## Setup `init_boot`\n\n```md\n## Not a heading\n```',
+  );
+  assert.deepEqual(result.toc, [
+    { id: 'setup-init_boot', title: 'Setup init_boot', children: [{ id: 'key-check', title: 'Key check' }] },
+    { id: 'setup-init_boot-1', title: 'Setup init_boot', children: [] },
+  ]);
+  assert.match(result.html, /id="setup-init_boot-1"/);
+});
+
+test('posts without section headings have no table of contents', async () => {
+  assert.ok(server);
+  const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
+  assert.deepEqual((await renderMarkdown('A short post.')).toc, []);
+});
+
+test('concurrent Markdown renders do not share table of contents entries', async () => {
+  assert.ok(server);
+  const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
+  const [first, second] = await Promise.all([renderMarkdown('## First'), renderMarkdown('## Second')]);
+  assert.deepEqual(first.toc, [{ id: 'first', title: 'First', children: [] }]);
+  assert.deepEqual(second.toc, [{ id: 'second', title: 'Second', children: [] }]);
+});
+
+test('post pages render section navigation with the mobile disclosure initially closed', async () => {
+  assert.ok(server);
+  const { renderMarkdown } = await server.ssrLoadModule('/src/lib/server/markdown.ts');
+  const { default: PostPage } = await server.ssrLoadModule('/src/routes/[slug]/+page.svelte');
+  const { render } = await server.ssrLoadModule('svelte/server');
+  const data = {
+    post: { title: 'Post', slug: 'post', date: '2026-11-05', description: '', tags: [] },
+    ...(await renderMarkdown('## Setup\n\n### Verify')),
+  };
+  const rendered = render(PostPage, { props: { data } }).body;
+  assert.match(rendered, /<nav\b[^>]*aria-label="글 목차"/);
+  assert.match(rendered, /href="#setup"/);
+  assert.match(rendered, /href="#verify"/);
+  const disclosure = rendered.match(/<details\b[^>]*>/)?.[0];
+  assert.ok(disclosure);
+  assert.doesNotMatch(disclosure, /\bopen(?:[\s=>])/);
+});
